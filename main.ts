@@ -1,6 +1,12 @@
 // Tiny stack VM for make.fun tiny-stack-vm-01 (ISA v1).
 // Runs every /input/<id> program and writes /output/<id>/stdout.bin + exit.txt.
 // Plain JavaScript (no TS-only syntax) so Node 22 type-stripping runs it as-is.
+// Mount locations: the docker sandbox mounts /input and /output for real;
+// the process driver instead passes their host paths in these env vars
+// (grader/sandbox/types.ts MOUNT_POINTS). The values only locate the
+// mounts; they never change the computation, so runs stay deterministic.
+const INDIR = process.env.MAKEFUN_INPUT_DIR ?? '/input';
+const OUTDIR = process.env.MAKEFUN_OUTPUT_DIR ?? '/output';
 const fs = require('node:fs');
 
 // Stack needs per opcode: [pops, pushes]. Built from the ISA table.
@@ -92,14 +98,14 @@ function run(p, inp) {
   }
 }
 
-// Entry: answer every instance in /input in one run.
-for (const id of fs.readdirSync('/input').sort()) {
-  const dir = '/input/' + id;
+// Entry: answer every instance in the input dir in one run.
+for (const id of fs.readdirSync(INDIR).sort()) {
+  const dir = INDIR + '/' + id;
   let prog, inp;
   try { prog = fs.readFileSync(dir + '/program.bin'); } catch { prog = Buffer.alloc(0); }
   try { inp = fs.readFileSync(dir + '/input.bin'); } catch { inp = Buffer.alloc(0); }
   const [out, code] = run(prog, inp);
-  fs.mkdirSync('/output/' + id, { recursive: true });
-  fs.writeFileSync('/output/' + id + '/stdout.bin', Buffer.from(out));
-  fs.writeFileSync('/output/' + id + '/exit.txt', code + '\n');
+  fs.mkdirSync(OUTDIR + '/' + id, { recursive: true });
+  fs.writeFileSync(OUTDIR + '/' + id + '/stdout.bin', Buffer.from(out));
+  fs.writeFileSync(OUTDIR + '/' + id + '/exit.txt', code + '\n');
 }
