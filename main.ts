@@ -30,7 +30,7 @@ function run(p, inp) {
     if (pc < 0 || pc >= p.length) return [o, 9];
     const op = p[pc];
     // 3. unknown opcode.
-    const known = op <= 7 || (op >= 16 && op <= 30) || (op >= 32 && op <= 34) || (op >= 64 && op <= 65) || (op >= 80 && op <= 83);
+    const known = op <= 7 || (op >= 16 && op <= 30) || (op >= 32 && op <= 34) || (op >= 48 && op <= 52) || (op >= 64 && op <= 65) || (op >= 80 && op <= 83);
     if (!known) return [o, 5];
     // 4. immediate cut off by the end of the program.
     let imm = 0, len = 1;
